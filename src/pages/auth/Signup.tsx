@@ -70,7 +70,7 @@ const Signup = () => {
 
       console.log('Sending signup request with payload:', { email: payload.email, password: '[REDACTED]' });
 
-      const response = await fetch('https://student-portal-lms-seven.vercel.app/api/auth/signup', {
+      const response = await fetch('https://lms-backend-ruddy-eight.vercel.app/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

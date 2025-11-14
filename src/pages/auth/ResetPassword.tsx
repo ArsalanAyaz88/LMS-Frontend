@@ -57,7 +57,7 @@ const ResetPassword = () => {
       return;
     }
     try {
-      const response = await fetch('https://student-portal-lms-seven.vercel.app/api/auth/reset-password', {
+      const response = await fetch('https://lms-backend-ruddy-eight.vercel.app/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, pin, new_password: password }),

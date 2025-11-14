@@ -99,7 +99,7 @@ const ManageAssignments: FC = () => {
     try {
       setLoading(prev => ({ ...prev, courses: true }));
       const token = localStorage.getItem('admin_access_token');
-      const response = await fetchWithAuth('https://student-portal-lms-seven.vercel.app/api/admin/courses', {
+      const response = await fetchWithAuth('https://lms-backend-ruddy-eight.vercel.app/api/admin/courses', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -122,7 +122,7 @@ const ManageAssignments: FC = () => {
       setLoading(prev => ({ ...prev, assignments: true }));
       const token = localStorage.getItem('admin_access_token');
       const response = await fetchWithAuth(
-        `https://student-portal-lms-seven.vercel.app/api/admin/courses/${selectedCourse}/assignments`,
+        `https://lms-backend-ruddy-eight.vercel.app/api/admin/courses/${selectedCourse}/assignments`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -177,7 +177,7 @@ const ManageAssignments: FC = () => {
       due_date: assignmentDueDate.toISOString()
     };
 
-    const baseUrl = 'https://student-portal-lms-seven.vercel.app/api';
+    const baseUrl = 'https://lms-backend-ruddy-eight.vercel.app/api';
     const endpoint = editingAssignment
       ? `/admin/courses/${selectedCourse}/assignments/${editingAssignment.id}`
       : `/admin/courses/${selectedCourse}/assignments`;
@@ -208,13 +208,7 @@ const ManageAssignments: FC = () => {
       console.log('Response status:', response.status);
       console.log('Response headers:', response.headers);
 
-      const responseData = response.data;
-      console.log('Response data:', responseData);
-
-      if (response.status >= 400) {
-        throw new Error(responseData.detail || responseData.message || `HTTP error! Status: ${response.status}`);
-      }
-
+      const responseData = await handleApiResponse(response);
       console.log('API Response:', responseData);
       
       toast.success(`Assignment ${editingAssignment ? 'updated' : 'created'} successfully!`);
@@ -236,7 +230,7 @@ const ManageAssignments: FC = () => {
     try {
       const token = localStorage.getItem('admin_access_token');
       const response = await fetchWithAuth(
-        `https://student-portal-lms-seven.vercel.app/api/admin/courses/${selectedCourse}/assignments/${assignmentId}`,
+        `https://lms-backend-ruddy-eight.vercel.app/api/admin/courses/${selectedCourse}/assignments/${assignmentId}`,
         {
           method: 'DELETE',
           headers: {
@@ -266,7 +260,7 @@ const ManageAssignments: FC = () => {
       setLoading(prev => ({ ...prev, submissions: true }));
       const token = localStorage.getItem('admin_access_token');
       const response = await fetchWithAuth(
-        `https://student-portal-lms-seven.vercel.app/api/admin/courses/${assignment.course_id}/assignments/${assignment.id}/submissions/students`,
+        `https://lms-backend-ruddy-eight.vercel.app/api/admin/courses/${assignment.course_id}/assignments/${assignment.id}/submissions/students`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -288,7 +282,7 @@ const ManageAssignments: FC = () => {
     try {
       const token = localStorage.getItem('admin_access_token');
       const response = await fetchWithAuth(
-        `https://student-portal-lms-seven.vercel.app/api/admin/courses/${viewingSubmissionsFor.course_id}/assignments/${viewingSubmissionsFor.id}/submissions/${gradingSubmission.id}/grade`,
+        `https://lms-backend-ruddy-eight.vercel.app/api/admin/courses/${viewingSubmissionsFor.course_id}/assignments/${viewingSubmissionsFor.id}/submissions/${gradingSubmission.id}/grade`,
         {
           method: 'PUT',
           headers: {

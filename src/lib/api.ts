@@ -11,7 +11,7 @@ interface UserSession {
   access_token: string;
 }
 
-const API_BASE_URL = 'https://student-portal-lms-seven.vercel.app';
+const API_BASE_URL = 'https://lms-backend-ruddy-eight.vercel.app';
 
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,

@@ -36,7 +36,7 @@ const AdminStudents = () => {
       try {
         const token = localStorage.getItem('admin_access_token');
         const response = await fetchWithAuth(
-          "https://student-portal-lms-seven.vercel.app/api/admin/users",
+          "https://lms-backend-ruddy-eight.vercel.app/api/admin/users",
           {
             headers: {
               'Authorization': `Bearer ${token}`
@@ -84,7 +84,7 @@ const AdminStudents = () => {
       try {
         const token = localStorage.getItem('admin_access_token');
         const response = await fetchWithAuth(
-          `https://student-portal-lms-seven.vercel.app/api/admin/users/${studentId}`,
+          `https://lms-backend-ruddy-eight.vercel.app/api/admin/users/${studentId}`,
           {
             method: 'DELETE',
             headers: {

@@ -75,7 +75,8 @@ const AdminNotifications: FC = () => {
       setError(null);
       try {
         const token = localStorage.getItem('admin_access_token');
-        const response = await fetchWithAuth('https://student-portal-lms-seven.vercel.app/api/admin/notifications', {
+        const response = await fetchWithAuth('https://lms-backend-ruddy-eight.vercel.app/api/admin/notifications', {
+        
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -101,7 +102,7 @@ const AdminNotifications: FC = () => {
 
     try {
       const token = localStorage.getItem('admin_access_token');
-      const response = await fetchWithAuth(`https://student-portal-lms-seven.vercel.app/api/admin/notifications/${id}`, {
+      const response = await fetchWithAuth(`https://lms-backend-ruddy-eight.vercel.app/api/admin/notifications/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
