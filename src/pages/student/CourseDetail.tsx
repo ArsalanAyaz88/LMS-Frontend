@@ -255,6 +255,7 @@ const PaymentStatusCard: FC<{
                                                             allowFullScreen
                                                         />
                                                     ) : (
+                                                    <>
                                                     <video
                                                         className="w-full h-full rounded-t-lg video-protected"
                                                         controls
@@ -618,6 +619,8 @@ const PaymentStatusCard: FC<{
                                                         onSelectStart={(e) => e.preventDefault()}
                                                         onDragStart={(e) => e.preventDefault()}
                                                     />
+                                                    </>
+                                                    )}
                                                 </div>
                                                 <div className="p-6 bg-background">
                                                     <h4 className="text-2xl font-bold mb-2 text-foreground">{selectedVideo.title}</h4>
