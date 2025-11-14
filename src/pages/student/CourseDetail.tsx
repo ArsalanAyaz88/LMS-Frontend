@@ -12,6 +12,8 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { Badge } from '@/components/ui/badge';
 import '@/styles/video-protection.css';
 
+const isYouTubeUrl = (url?: string) => !!url && /youtube\.com|youtu\.be|youtube-nocookie\.com/i.test(url);
+
 // --- INTERFACES ---
 interface CourseInfo {
     id: string;
@@ -245,6 +247,14 @@ const PaymentStatusCard: FC<{
                                         {selectedVideo ? (
                                             <div>
                                                 <div className="aspect-video bg-black rounded-t-lg relative">
+                                                    {isYouTubeUrl(selectedVideo.cloudinary_url) ? (
+                                                        <iframe
+                                                            src={selectedVideo.cloudinary_url}
+                                                            className="w-full h-full rounded-t-lg"
+                                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                            allowFullScreen
+                                                        />
+                                                    ) : (
                                                     <video
                                                         className="w-full h-full rounded-t-lg video-protected"
                                                         controls

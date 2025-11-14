@@ -57,6 +57,10 @@ const ManageVideos: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [videoDuration, setVideoDuration] = useState(0);
+  const [useYouTube, setUseYouTube] = useState<boolean>(true);
+  const [youtubeUrl, setYoutubeUrl] = useState<string>('');
+
+  const isYouTubeUrl = (url?: string) => !!url && /youtube\.com|youtu\.be|youtube-nocookie\.com/i.test(url);
 
   const fetchVideosByCourse = useCallback(async (courseId: string) => {
     if (!courseId) return;
@@ -99,6 +103,10 @@ const ManageVideos: React.FC = () => {
   const handleOpenModal = (video: Partial<Video> | null = null) => {
     if (video) {
       setCurrentVideo(video);
+      const prefillUrl = (video.cloudinary_url || video.video_url || '');
+      const yt = isYouTubeUrl(prefillUrl);
+      setUseYouTube(yt);
+      setYoutubeUrl(yt ? prefillUrl : '');
     } else {
       if (!selectedCourseId) {
         toast.error('Please select a course first to add a video.');
@@ -106,6 +114,8 @@ const ManageVideos: React.FC = () => {
       }
       const nextOrder = videos.length > 0 ? Math.max(...videos.map(v => v.order)) + 1 : 1;
       setCurrentVideo({ title: '', description: '', course_id: selectedCourseId, order: nextOrder, is_preview: false });
+      setUseYouTube(true);
+      setYoutubeUrl('');
     }
     setIsModalOpen(true);
   };
@@ -117,6 +127,8 @@ const ManageVideos: React.FC = () => {
     setUploadProgress(0);
     setIsUploading(false);
     setVideoDuration(0);
+    setUseYouTube(true);
+    setYoutubeUrl('');
   };
 
   const handleOpenPreviewModal = async (videoId: string) => {
@@ -177,21 +189,36 @@ const ManageVideos: React.FC = () => {
   const handleSave = async () => {
     if (!currentVideo || !selectedCourseId) return;
 
-    // For new videos, a file must be selected.
-    if (!currentVideo.id && !selectedFile) {
-        toast.error("Please select a video file to upload.");
+    if (!currentVideo.id) {
+      if (useYouTube) {
+        if (!youtubeUrl) {
+          toast.error('Please paste a YouTube URL.');
+          return;
+        }
+      } else if (!selectedFile) {
+        toast.error('Please select a video file to upload.');
         return;
+      }
     }
 
     setIsUploading(true);
     setUploadProgress(0);
 
     try {
-        let videoUrl = currentVideo.video_url;
-        let fileKey = currentVideo.public_id; // public_id stores the S3 file key
+        let videoUrl = currentVideo.video_url || currentVideo.cloudinary_url;
+        let fileKey = currentVideo.public_id; // public_id stores the S3 file key or youtube:<id>
 
-        // If a new file is selected, upload it to S3
-        if (selectedFile) {
+        if (useYouTube) {
+            const sigResponse = await fetchWithAuth('/api/admin/generate-video-upload-signature', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                data: { youtube_url: youtubeUrl }
+            });
+            const ytData: any = await handleApiResponse(sigResponse);
+            videoUrl = ytData.video_url;
+            fileKey = ytData.file_key;
+            setUploadProgress(100);
+        } else if (selectedFile) {
             // 1. Get pre-signed URL from our backend
             console.log('Data sent to generate-video-upload-signature:', { content_type: selectedFile.type, file_name: selectedFile.name });
             const sigResponse = await fetchWithAuth('/api/admin/generate-video-upload-signature', {
@@ -225,7 +252,7 @@ const ManageVideos: React.FC = () => {
             description: currentVideo.description,
             video_url: videoUrl,
             file_key: fileKey, // Match backend schema
-            duration: videoDuration,
+            duration: useYouTube ? 0 : videoDuration,
             is_preview: currentVideo.is_preview,
             order: currentVideo.order || 0, // Match backend schema
         };
@@ -351,10 +378,23 @@ const ManageVideos: React.FC = () => {
                 <Checkbox id="is_preview" checked={currentVideo?.is_preview || false} onCheckedChange={(checked) => setCurrentVideo(v => ({...v, is_preview: !!checked }))} />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="video-file" className="text-right">Video File</Label>
-              <Input id="video-file" type="file" accept="video/*" onChange={handleFileChange} className="col-span-3" />
+              <Label htmlFor="use-youtube" className="text-right">Use YouTube</Label>
+              <Checkbox id="use-youtube" checked={useYouTube} onCheckedChange={(checked) => setUseYouTube(!!checked)} />
             </div>
-            {selectedFile && <p className='text-sm text-center'>New file selected: {selectedFile.name}</p>}
+            {useYouTube ? (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="youtube-url" className="text-right">YouTube URL</Label>
+                <Input id="youtube-url" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} placeholder="https://youtu.be/..." className="col-span-3" />
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="video-file" className="text-right">Video File</Label>
+                  <Input id="video-file" type="file" accept="video/*" onChange={handleFileChange} className="col-span-3" />
+                </div>
+                {selectedFile && <p className='text-sm text-center'>New file selected: {selectedFile.name}</p>}
+              </>
+            )}
             {isUploading && (
               <div className="col-span-4">
                 <Progress value={uploadProgress} className="w-full" />
@@ -377,9 +417,20 @@ const ManageVideos: React.FC = () => {
             <DialogTitle>Video Preview</DialogTitle>
           </DialogHeader>
           {previewVideoUrl && (
-            <video controls autoPlay src={previewVideoUrl} className="w-full rounded-lg mt-4 max-h-[70vh]">
-              Your browser does not support the video tag.
-            </video>
+            isYouTubeUrl(previewVideoUrl) ? (
+              <div className="w-full mt-4 aspect-video rounded-lg overflow-hidden">
+                <iframe
+                  src={previewVideoUrl}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <video controls autoPlay src={previewVideoUrl} className="w-full rounded-lg mt-4 max-h-[70vh]">
+                Your browser does not support the video tag.
+              </video>
+            )
           )}
           <DialogFooter>
                         <Button variant="outline" onClick={handleClosePreviewModal} className="bg-transparent border-gray-600 hover:bg-gray-700">Close</Button>
