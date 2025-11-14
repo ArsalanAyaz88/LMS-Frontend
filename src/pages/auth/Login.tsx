@@ -16,6 +16,16 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const fillDemoUser = () => {
+    setEmail("arsalanayaz821@gmail.com");
+    setPassword("11223344");
+  };
+
+  const fillDemoAdmin = () => {
+    setEmail("sabiralibutt@gmail.com");
+    setPassword("462195");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -201,6 +211,15 @@ const Login = () => {
               >
                 Forgot your password?
               </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <Button type="button" variant="secondary" onClick={fillDemoUser} className="w-full">
+                Use Demo User
+              </Button>
+              <Button type="button" variant="outline" onClick={fillDemoAdmin} className="w-full">
+                Use Demo Admin
+              </Button>
             </div>
 
             <Button type="submit" className="w-full text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 transition-transform duration-300 shadow-lg shadow-purple-500/30 rounded-full py-3 text-base font-semibold" disabled={isLoading}>
